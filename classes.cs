@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Net;
@@ -70,30 +71,70 @@ namespace ms
         }
         
         public bool isEmpty(string table_name) {
-            //TODO execute a select with no restrictions and check the number of results
-            return true;
+            string q = string.Format("SELECT * FROM {0}", table_name);
+
+            SqlCeCommand cmd = new SqlCeCommand(q, _cn);
+            SqlCeDataReader r;
+            
+            r = cmd.ExecuteReader();
+
+            if (!r.Read()) {
+                return true;
+            }
+
+            return false;
         }
 
-        public bool existsTables(string table_name) {//TODO variable no of params
+        public bool existsTables(params string[] table_names) {
             string q = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE <> 'VIEW'";
+            ArrayList existing_tables = new ArrayList();
 
             SqlCeCommand cmd = new SqlCeCommand(q, _cn);
             SqlCeDataReader r;
 
             r = cmd.ExecuteReader();
 
-            while (r.Read()) {
-                Debug.WriteLine(r.GetString(0));
+            while(r.Read()) {
+                existing_tables.Add(r.GetString(0));
             }
 
-            return true; //TODO if exists true, else false
+            foreach (string tablename in table_names) {
+                if (!existing_tables.Contains(tablename)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        public void createTables() { //variable number of params
-            string q = "CREATE TABLE tesxt(LastName decimal, FirstName decimal, URL nvarchar (256) )";
+        public void createTable(string table_query) {
+            string q = "CREATE TABLE {0}";
+            SqlCeCommand cmd;
+
+            cmd = new SqlCeCommand(string.Format(q, table_query), _cn);
+            cmd.ExecuteNonQuery();
+        }
+
+        public bool insert(string table_name, Dictionary<string, object> cols_vals, bool silent = false){
+            string q = string.Format("INSERT INTO {0}({1}) VALUES('{2}')", table_name, string.Join(",", cols_vals.Keys), string.Join("','", cols_vals.Values));
+            int rows = 0;
 
             SqlCeCommand cmd = new SqlCeCommand(q, _cn);
-            cmd.ExecuteNonQuery();
+            
+            try {
+                rows = cmd.ExecuteNonQuery();
+            }
+            catch (SqlCeException e) {
+                if (!silent) {
+                    throw e;
+                }
+            }
+
+            if (rows > 0) {
+                return true;
+            }
+
+            return false;
         }
 
         private bool hasExtension(string str, string extension) {
