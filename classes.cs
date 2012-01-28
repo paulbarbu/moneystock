@@ -206,6 +206,12 @@ namespace ms
         private string _element_name;
         private string _subelement_name;
         private string _subelement_attr;
+
+        public XmlTextReader Reader {
+            set {
+                _reader = value;
+            }
+        }
         
         public currentXMLParser(XmlTextReader reader, string element_name, string subelement_name, string subelement_attr) {
             this._reader = reader;
