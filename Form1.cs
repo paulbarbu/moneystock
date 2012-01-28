@@ -18,41 +18,59 @@ namespace ms
         public Form1()
         {
             InitializeComponent();
-
-            bool populate = false;
-
-            DBHandler db = new DBHandler("db", "moneystock"); //TODO create this in user/data
-
-            //db.createTables();
             
-            if (!db.DBexists()) {
-                db.create();
-                populate = true;
-            }
-            else if(!db.existsTables("foo")){ //TODO {{no table exists} -> create them or {if it's empty}} -> populate them
-                populate = true;
-            }
-
-            int lastyear = DateTime.Now.AddYears(-1).Year;
-
-            XmlTextReader yearReader = new XmlTextReader("http://www.bnro.ro/files/xml/years/nbrfxrates" + lastyear + ".xml");
-            XmlTextReader last10Reader = new XmlTextReader("http://www.bnro.ro/nbrfxrates10days.xml");
+            //create these depenging on last workday
             XmlTextReader cReader = new XmlTextReader("http://www.bnr.ro/nbrfxrates.xml");
-
-            
-            periodXMLParser yParser = new periodXMLParser(yearReader, "Cube", "date", "Rate", "currency");
-            periodXMLParser last10Parser = new periodXMLParser(last10Reader, "Cube", "date", "Rate", "currency");
-            currentXMLParser cParser = new currentXMLParser(cReader, "Cube", "Rate", "currency");
-
-            Dictionary<string, Dictionary<string, decimal>> yRates = yParser.parse();
-            Dictionary<string, Dictionary<string, decimal>> last10Rates = last10Parser.parse();
+            currentXMLParser cParser = new currentXMLParser(cReader, "Cube", "Rate", "currency", "date");
             Dictionary<string, decimal> cRates = cParser.parse();
+
+            XmlTextReader dateReader = new XmlTextReader("http://www.bnr.ro/nbrfxrates.xml");
+            cParser.Reader = dateReader;
+            DateTime cDate = cParser.getDate();
 
             CurrencyConverter cc = new CurrencyConverter(cRates);
 
-            cc.dbg();
+            //cc.dbg();
+
+            List<string> populate = null;
+            DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
+            
+            if (!db.DBexists()) {
+                db.create();
+
+                foreach (string table in cRates.Keys) {
+                    db.createTable(table + "(rate MONEY NOT NULL, date DATETIME UNIQUE NOT NULL)");
+                    populate.Add(table);
+                }
+            }
+            
+
+            //create these only if neccessary
+            int lastyear = DateTime.Now.AddYears(-1).Year;
+            XmlTextReader yearReader = new XmlTextReader("http://www.bnro.ro/files/xml/years/nbrfxrates" + lastyear + ".xml");
+            periodXMLParser yParser = new periodXMLParser(yearReader, "Cube", "date", "Rate", "currency");
+            Dictionary<string, Dictionary<string, decimal>> yRates = yParser.parse();
+
+            //create these only if neccessary
+            XmlTextReader last10Reader = new XmlTextReader("http://www.bnro.ro/nbrfxrates10days.xml");
+            periodXMLParser last10Parser = new periodXMLParser(last10Reader, "Cube", "date", "Rate", "currency");
+            Dictionary<string, Dictionary<string, decimal>> last10Rates = last10Parser.parse();
+        
+            //get last workday, if last workday is not present in the db, fetch the data and insert it
+            //populate with current values unconditionally
+            foreach (string table in cRates.Keys) {
+                Dictionary<string, object> d = new Dictionary<string,object>();
+                d.Add("rate", cRates[table]);
+                d.Add("date", cDate);
+
+                if (!db.insert(table, d, true)) {
+                    //TODO raise error
+                }
+            }
 
             //TODO if populate, then populate the database and don;t freeze the form while doing it
+            if (null != populate) {
+            }
         }
 
         private void scrapeData(object sender, EventArgs e)
