@@ -204,6 +204,7 @@ namespace ms
     class currentXMLParser {
         private XmlTextReader _reader;
         private string _element_name;
+        private string _date_attr;
         private string _subelement_name;
         private string _subelement_attr;
 
@@ -213,11 +214,12 @@ namespace ms
             }
         }
         
-        public currentXMLParser(XmlTextReader reader, string element_name, string subelement_name, string subelement_attr) {
+        public currentXMLParser(XmlTextReader reader, string element_name, string subelement_name, string subelement_attr, string date_attr) {
             this._reader = reader;
             this._element_name = element_name;
             this._subelement_name = subelement_name;
             this._subelement_attr = subelement_attr;
+            this._date_attr = date_attr;
         }
 
         public Dictionary<string, decimal> parse() {
@@ -253,6 +255,30 @@ namespace ms
             Debug.WriteLine(currencies);
              * */
             return currencies;
+        }
+
+        public DateTime getDate() {
+            DateTime dt = new DateTime();
+            bool set = false;
+            
+            while (_reader.Read() && !set) {
+                switch (_reader.NodeType) {
+                    case XmlNodeType.Element:
+                        if (_reader.Name == _element_name) {
+                            while (_reader.MoveToNextAttribute()) {
+                                if (_reader.Name == _date_attr) {
+                                    dt = DateTime.Parse(_reader.Value);
+                                    set = true;
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+
+
+            return dt;
         }
     }
 
