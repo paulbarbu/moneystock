@@ -133,6 +133,19 @@ namespace ms
             return false;
         }
 
+        public SqlCeDataReader getData(string q) {
+            SqlCeCommand cmd = new SqlCeCommand(q, _cn);
+
+            return cmd.ExecuteReader();
+        }
+
+        public void delete(string query) {
+            string q = string.Format("DELETE FROM {0}", query);
+
+            SqlCeCommand cmd = new SqlCeCommand(q, _cn);
+            cmd.ExecuteNonQuery();
+        }
+
         private bool hasExtension(string str, string extension) {
             if (str.IndexOf(extension) > 0) {
                 return true;
