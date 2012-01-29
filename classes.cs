@@ -105,9 +105,7 @@ namespace ms
 
         public void createTable(string table_query) {
             string q = "CREATE TABLE {0}";
-            SqlCeCommand cmd;
-
-            cmd = new SqlCeCommand(string.Format(q, table_query), _cn);
+            SqlCeCommand cmd = new SqlCeCommand(string.Format(q, table_query), _cn);
             cmd.ExecuteNonQuery();
         }
 
