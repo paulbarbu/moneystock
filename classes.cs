@@ -168,17 +168,7 @@ namespace ms
             }
         }
     }
-
-    abstract class abstractDownloader {
-        private string _URI;
-
-        protected abstractDownloader(string URI){
-            _URI = URI;
-        }
-
-        public abstract string getData();
-    }
-
+    
     class XMLDownloader : abstractDownloader {
         private string _URI;
         private WebClient _client;
@@ -212,73 +202,31 @@ namespace ms
         }
     }
 
-    class currentXMLParser {
-        private XmlTextReader _reader;
+    class XmlParser : XmlTextReader {
         private string _element_name;
-        private string _date_attr;
+        private string _element_attr;
         private string _subelement_name;
         private string _subelement_attr;
 
-        public XmlTextReader Reader {
-            set {
-                _reader = value;
-            }
-        }
-        
-        public currentXMLParser(XmlTextReader reader, string element_name, string subelement_name, string subelement_attr, string date_attr) {
-            this._reader = reader;
+        public XmlParser(string URL, string element_name, string element_attr, string subelement_name, string subelement_attr)
+            : base(URL) {
             this._element_name = element_name;
+            this._element_attr = element_attr;
             this._subelement_name = subelement_name;
             this._subelement_attr = subelement_attr;
-            this._date_attr = date_attr;
-        }
-
-        public Dictionary<string, decimal> parse() {
-            Dictionary<string, decimal> currencies = new Dictionary<string, decimal>();
-            string current_currency = null;
-
-            while(_reader.Read()){
-                switch(_reader.NodeType){
-                    case XmlNodeType.Element:
-                        if (_reader.Name == _subelement_name) {
-                            //TODO check if the key exists
-                            while(_reader.MoveToNextAttribute()){
-                                if(_reader.Name == _subelement_attr){
-                                    current_currency = _reader.Value;
-                                }
-                            }
-                        }
-                        break;
-
-                    case XmlNodeType.Text:
-                        if (null != current_currency) {
-                            currencies.Add(current_currency, decimal.Parse(_reader.Value));
-                        }
-                        break;
-                }
-            }
-
-            /*foreach(var data in currencies){
-                Debug.WriteLine("\t({0} => {1})\n", data.Key, data.Value);
-            }
-            Debug.WriteLine("),");
-            
-            Debug.WriteLine(currencies);
-             * */
-            return currencies;
         }
 
         public DateTime getDate() {
             DateTime dt = new DateTime();
             bool set = false;
-            
-            while (_reader.Read() && !set) {
-                switch (_reader.NodeType) {
+
+            while (this.Read() && !set) {
+                switch (this.NodeType) {
                     case XmlNodeType.Element:
-                        if (_reader.Name == _element_name) {
-                            while (_reader.MoveToNextAttribute()) {
-                                if (_reader.Name == _date_attr) {
-                                    dt = DateTime.Parse(_reader.Value);
+                        if (this.Name == _element_name) {
+                            while (this.MoveToNextAttribute()) {
+                                if (this.Name == _element_attr) {
+                                    dt = DateTime.Parse(this.Value);
                                     set = true;
                                     break;
                                 }
@@ -291,45 +239,28 @@ namespace ms
 
             return dt;
         }
-    }
-
-    class periodXMLParser {
-        private XmlTextReader _reader;
-        private string _element_name;
-        private string _element_attr;
-        private string _subelement_name;
-        private string _subelement_attr;
-        
-        public periodXMLParser(XmlTextReader reader, string element_name, string element_attr,
-            string subelement_name, string subelement_attr) {
-            this._reader = reader;
-            this._element_name = element_name;
-            this._element_attr = element_attr;
-            this._subelement_name = subelement_name;
-            this._subelement_attr = subelement_attr;
-        }
 
         public Dictionary<string, Dictionary<string, decimal>> parse() {
             Dictionary<string, Dictionary<string, decimal>> currencies = new Dictionary<string, Dictionary<string, decimal>>();
             string current_key = null;
             string current_currency = null;
 
-            while(_reader.Read()){
-                switch(_reader.NodeType){
+            while (this.Read()) {
+                switch (this.NodeType) {
                     case XmlNodeType.Element:
-                        if (_reader.Name == _element_name) {
-                            while(_reader.MoveToNextAttribute()){
-                                if (_reader.Name == _element_attr) {
-                                    currencies.Add(_reader.Value, new Dictionary<string, decimal>());
-                                    current_key = _reader.Value;
+                        if (this.Name == _element_name) {
+                            while (this.MoveToNextAttribute()) {
+                                if (this.Name == _element_attr) {
+                                    currencies.Add(this.Value, new Dictionary<string, decimal>());
+                                    current_key = this.Value;
                                 }
                             }
                         }
-                        else if (_reader.Name == _subelement_name && null != current_key) {
+                        else if (this.Name == _subelement_name && null != current_key) {
                             //TODO check if the key exists
-                            while(_reader.MoveToNextAttribute()){
-                                if(_reader.Name == _subelement_attr){
-                                    current_currency = _reader.Value;
+                            while (this.MoveToNextAttribute()) {
+                                if (this.Name == _subelement_attr) {
+                                    current_currency = this.Value;
                                 }
                             }
                         }
@@ -337,7 +268,7 @@ namespace ms
 
                     case XmlNodeType.Text:
                         if (null != current_currency) {
-                            currencies[current_key][current_currency] = decimal.Parse(_reader.Value);
+                            currencies[current_key][current_currency] = decimal.Parse(this.Value);
                         }
                         break;
                 }
@@ -450,5 +381,15 @@ namespace ms
         public abstract bool saveData();
 
         public abstract int plot();
+    }
+
+    abstract class abstractDownloader {
+        private string _URI;
+
+        protected abstractDownloader(string URI) {
+            _URI = URI;
+        }
+
+        public abstract string getData();
     }
 }

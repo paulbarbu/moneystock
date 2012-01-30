@@ -25,6 +25,7 @@ namespace ms
 
             DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
 
+            /*
             XmlTextReader cReader = new XmlTextReader("http://www.bnr.ro/nbrfxrates.xml");
             XmlTextReader dateReader = new XmlTextReader("http://www.bnr.ro/nbrfxrates.xml");
             currentXMLParser cParser = new currentXMLParser(cReader, "Cube", "Rate", "currency", "date");
@@ -33,6 +34,14 @@ namespace ms
 
             cParser.Reader = dateReader;
             DateTime cDate = cParser.getDate();
+            */
+
+            XmlParser currentXML = new XmlParser("http://www.bnr.ro/nbrfxrates.xml", "Cube", "date", "Rate", "currency");
+            XmlParser dateXML = new XmlParser("http://www.bnr.ro/nbrfxrates.xml", "Cube", "date", "Rate", "currency");
+
+            Dictionary<string, decimal> cRates = currentXML.parse().First().Value;
+
+            DateTime cDate = dateXML.getDate();
 
             //CurrencyConverter cc = new CurrencyConverter(cRates);
             //cc.dbg();
@@ -88,9 +97,8 @@ namespace ms
                 TimeSpan ts = (TimeSpan)(cDate - last_fetch);
 
                 if (populate || ts.Days >= 10) {
-                    XmlTextReader last10Reader = new XmlTextReader("http://www.bnro.ro/nbrfxrates10days.xml");
-                    periodXMLParser last10Parser = new periodXMLParser(last10Reader, "Cube", "date", "Rate", "currency");
-                    Dictionary<string, Dictionary<string, decimal>> last10Rates = last10Parser.parse();
+                    XmlParser last10XML = new XmlParser("http://www.bnro.ro/nbrfxrates10days.xml", "Cube", "date", "Rate", "currency");
+                    Dictionary<string, Dictionary<string, decimal>> last10Rates = last10XML.parse();
 
                     Dictionary<string, object> d = new Dictionary<string,object>();
 
@@ -111,9 +119,8 @@ namespace ms
             if (populate) {
                 int lastyear = DateTime.Now.AddYears(-1).Year;
 
-                XmlTextReader yearReader = new XmlTextReader("http://www.bnro.ro/files/xml/years/nbrfxrates" + lastyear + ".xml");
-                periodXMLParser yParser = new periodXMLParser(yearReader, "Cube", "date", "Rate", "currency");
-                Dictionary<string, Dictionary<string, decimal>> yRates = yParser.parse();
+                XmlParser yearXML = new XmlParser("http://www.bnro.ro/files/xml/years/nbrfxrates" + lastyear + ".xml", "Cube", "date", "Rate", "currency");
+                Dictionary<string, Dictionary<string, decimal>> yRates = yearXML.parse();
                 //TODO if populate, then populate the database and don;t freeze the form while doing it
 
                 Dictionary<string, object> d = new Dictionary<string, object>();
