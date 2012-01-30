@@ -11,6 +11,7 @@ using System.IO;
 using System.Diagnostics; //todo remove
 using System.Xml;
 using System.Data.SqlServerCe;
+using System.Threading;
 
 namespace ms
 {
@@ -19,22 +20,41 @@ namespace ms
         public Form1()
         {
             InitializeComponent();
+        }
 
+        private void scrapeData(object sender, EventArgs e)
+        {
+            WebClient client = new WebClient();
+
+            Stream ssource = client.OpenRead("http://www.bvb.ro/ListedCompanies/SecurityDetail.aspx?s=FP&t=1");
+            StreamReader reader = new StreamReader(ssource);
+            string source = reader.ReadToEnd();
+
+            int mark_position = source.IndexOf("<span id=\"ctl00_central_lbVar\"");
+            int start = mark_position + source.Substring(mark_position).IndexOf('>') + 1;
+            int length = source.Substring(start).IndexOf('<');
+          
+            label1.Text = source.Substring(start, length);
+
+            ssource.Close();
+            reader.Close();
+        }
+
+        private void Form1_Load(object sender, EventArgs e) {
+            this.Hide();
+            Form2 loading = new Form2();
+            loading.Show();
+            loading.Update();
+            initData();
+            loading.Close();
+            this.Visible = true;
+        }
+
+        private void initData() {
             bool populate = false, no_fetch = false;
             DateTime? last_fetch = null;
 
             DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
-
-            /*
-            XmlTextReader cReader = new XmlTextReader("http://www.bnr.ro/nbrfxrates.xml");
-            XmlTextReader dateReader = new XmlTextReader("http://www.bnr.ro/nbrfxrates.xml");
-            currentXMLParser cParser = new currentXMLParser(cReader, "Cube", "Rate", "currency", "date");
-
-            Dictionary<string, decimal> cRates = cParser.parse();
-
-            cParser.Reader = dateReader;
-            DateTime cDate = cParser.getDate();
-            */
 
             XmlParser currentXML = new XmlParser("http://www.bnr.ro/nbrfxrates.xml", "Cube", "date", "Rate", "currency");
             XmlParser dateXML = new XmlParser("http://www.bnr.ro/nbrfxrates.xml", "Cube", "date", "Rate", "currency");
@@ -42,9 +62,6 @@ namespace ms
             Dictionary<string, decimal> cRates = currentXML.parse().First().Value;
 
             DateTime cDate = dateXML.getDate();
-
-            //CurrencyConverter cc = new CurrencyConverter(cRates);
-            //cc.dbg();
             
             if (!db.DBexists()) {
                 db.create();
@@ -81,48 +98,44 @@ namespace ms
                         //TODO raise error
                     }
                 }
-                
+
                 if (null != last_fetch) {
                     db.delete(string.Format("data WHERE last_fetch='{0}'", last_fetch));
                 }
 
-                Dictionary<string, object> data = new Dictionary<string,object>();
+                Dictionary<string, object> data = new Dictionary<string, object>();
                 data.Add("last_fetch", cDate);
                 db.insert("data", data, true);
 
                 last_fetch = cDate;
             }
 
-            if (null != last_fetch) {
-                TimeSpan ts = (TimeSpan)(cDate - last_fetch);
+            TimeSpan ts = (TimeSpan)(cDate - last_fetch);
 
-                if (populate || ts.Days >= 10) {
-                    XmlParser last10XML = new XmlParser("http://www.bnro.ro/nbrfxrates10days.xml", "Cube", "date", "Rate", "currency");
-                    Dictionary<string, Dictionary<string, decimal>> last10Rates = last10XML.parse();
+            if (populate || ts.Days >= 10) {
+                XmlParser last10XML = new XmlParser("http://www.bnro.ro/nbrfxrates10days.xml", "Cube", "date", "Rate", "currency");
+                Dictionary<string, Dictionary<string, decimal>> last10Rates = last10XML.parse();
 
-                    Dictionary<string, object> d = new Dictionary<string,object>();
+                Dictionary<string, object> d = new Dictionary<string, object>();
 
-                    foreach(var date in last10Rates){
-                        d["date"] = date.Key;
+                foreach (var date in last10Rates) {
+                    d["date"] = date.Key;
 
-                        if (DateTime.Parse(date.Key) != last_fetch) {
-                            foreach (var currency in date.Value) {
-                                d["rate"] = currency.Value;
-                                db.insert(currency.Key, d, true);
-                            }
+                    if (DateTime.Parse(date.Key) != last_fetch) {
+                        foreach (var currency in date.Value) {
+                            d["rate"] = currency.Value;
+                            db.insert(currency.Key, d, true);
                         }
                     }
                 }
             }
-       
-            
+
+
             if (populate) {
                 int lastyear = DateTime.Now.AddYears(-1).Year;
 
                 XmlParser yearXML = new XmlParser("http://www.bnro.ro/files/xml/years/nbrfxrates" + lastyear + ".xml", "Cube", "date", "Rate", "currency");
                 Dictionary<string, Dictionary<string, decimal>> yRates = yearXML.parse();
-                //TODO if populate, then populate the database and don;t freeze the form while doing it
-
                 Dictionary<string, object> d = new Dictionary<string, object>();
 
                 foreach (var date in yRates) {
@@ -136,24 +149,6 @@ namespace ms
                     }
                 }
             }
-        }
-
-        private void scrapeData(object sender, EventArgs e)
-        {
-            WebClient client = new WebClient();
-
-            Stream ssource = client.OpenRead("http://www.bvb.ro/ListedCompanies/SecurityDetail.aspx?s=FP&t=1");
-            StreamReader reader = new StreamReader(ssource);
-            string source = reader.ReadToEnd();
-
-            int mark_position = source.IndexOf("<span id=\"ctl00_central_lbVar\"");
-            int start = mark_position + source.Substring(mark_position).IndexOf('>') + 1;
-            int length = source.Substring(start).IndexOf('<');
-          
-            label1.Text = source.Substring(start, length);
-
-            ssource.Close();
-            reader.Close();
         }
     }
 }
