@@ -11,50 +11,100 @@ using System.IO;
 using System.Diagnostics; //todo remove
 using System.Xml;
 using System.Data.SqlServerCe;
-using System.Threading;
 
 namespace ms
 {
     public partial class Form1 : Form
     {
+        private DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
+        private Converter c = new Converter();
+        private Dictionary<string, string> db_currencies, currencies = new Dictionary<string, string>() {
+            {"EUR", "Euro"},
+            {"AUD", "Dolar australian"},
+            {"BGN", "Levă bulgărească"},
+            {"CAD", "Dolar canadian"},
+            {"CHF", "Franc elveţian"},
+            {"CZK", "Coroană cehă"},
+            {"DKK", "Coroană daneză"},
+            {"EGP", "Liră egipteană"},
+            {"GBP", "Liră sterlină"},
+            {"HUF", "100 Forinţi maghiari TODO"},
+            {"JPY", "100 Yeni japonezi TODO"},
+            {"MDL", "Leu moldovenesc"},
+            {"NOK", "Coroană norvegiană"},
+            {"PLN", "Zlot polonez"},
+            {"RUB", "Rublă rusească"},
+            {"SEK", "Coroană suedeză"},
+            {"TRY", "Liră turcească"},
+            {"USD", "Dolar american"},
+            {"ZAR", "Rand sud-african"},
+            {"BRL", "Realul brazilian"},
+            {"CNY", "Renminbi chinezesc"},
+            {"INR", "Rupia indiană"},
+            {"KRW", "100 Woni sud-coreeni TODO"},
+            {"MXN", "Peso mexican"},
+            {"NZD", "Dolar neo-zeelandez"},
+            {"RSD", "Dinar sârbesc"},
+            {"UAH", "Hryvna ucraineană"},
+            {"AED", "Dirhamul Emiratelor Arabe"},
+            {"XAU", "Gram de aur"},
+            {"XDR", "DST"},
+        };
+        private readonly int ERR_KEY_NOTFOUND = -1;
+        private readonly string RON = "RON", RON_NAME = "Leu românesc";
+        
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void scrapeData(object sender, EventArgs e)
-        {
-            WebClient client = new WebClient();
-
-            Stream ssource = client.OpenRead("http://www.bvb.ro/ListedCompanies/SecurityDetail.aspx?s=FP&t=1");
-            StreamReader reader = new StreamReader(ssource);
-            string source = reader.ReadToEnd();
-
-            int mark_position = source.IndexOf("<span id=\"ctl00_central_lbVar\"");
-            int start = mark_position + source.Substring(mark_position).IndexOf('>') + 1;
-            int length = source.Substring(start).IndexOf('<');
-          
-            label1.Text = source.Substring(start, length);
-
-            ssource.Close();
-            reader.Close();
-        }
-
         private void Form1_Load(object sender, EventArgs e) {
+            label4.Hide();
+
             this.Hide();
             Form2 loading = new Form2();
             loading.Show();
             loading.Update();
-            initData();
+
+            Dictionary<string, decimal> cRates =  initData();
+
             loading.Close();
             this.Visible = true;
+
+            c.conversionRates = cRates;
+
+            db_currencies = getDBCurrencies();
+
+
+            int euro_pos = new int();
+            int i = 0;
+
+            comboBox1.Items.Add(RON_NAME);
+            comboBox2.Items.Add(RON_NAME);
+
+            foreach(var currency in db_currencies){
+                comboBox1.Items.Add(currency.Value);
+                comboBox2.Items.Add(currency.Value);
+
+                if ("EUR" == currency.Key) {
+                    euro_pos = i+1;
+                }
+                else {
+                    i++;
+                }                
+            }
+
+            db_currencies.Add(RON, RON_NAME);
+
+            comboBox1.SelectedIndex = euro_pos;
+            comboBox2.SelectedIndex = 0;
+
+            textBox1.Text = "1";
         }
 
-        private void initData() {
+        private Dictionary<string, decimal> initData() {
             bool populate = false, no_fetch = false;
             DateTime? last_fetch = null;
-
-            DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
 
             XmlParser currentXML = new XmlParser("http://www.bnr.ro/nbrfxrates.xml", "Cube", "date", "Rate", "currency");
             XmlParser dateXML = new XmlParser("http://www.bnr.ro/nbrfxrates.xml", "Cube", "date", "Rate", "currency");
@@ -65,12 +115,17 @@ namespace ms
             
             if (!db.DBexists()) {
                 db.create();
-                db.createTable("data(last_fetch DATETIME UNIQUE NOT NULL)");
+                db.createTable("data(last_fetch DATETIME UNIQUE NOT NULL, oldest_date DATETIME)");
+                db.createTable("currency(symbol NCHAR(3) NOT NULL, name NVARCHAR(35) NOT NULL)");
 
                 populate = no_fetch = true;
 
                 foreach (string table in cRates.Keys) {
                     db.createTable(table + "(rate MONEY NOT NULL, date DATETIME UNIQUE NOT NULL)");
+
+                    if (currencies.ContainsKey(table)) {
+                        db.insert("currency", new Dictionary<string, object>() {{"symbol", table}, {"name", currencies[table]}});
+                    }
                 }
             }
             else {
@@ -149,6 +204,98 @@ namespace ms
                     }
                 }
             }
+
+            cRates.Add(RON, 1);
+
+            return cRates;
+        }
+
+        private void updateUI(string amount, string from, string to) {
+            decimal amount_from;
+            
+            amount = delInvalidChars(amount, "0123456789,.".ToCharArray());
+
+            textBox1.Text = amount;
+
+            if ("" == amount) {
+                label4.Hide();
+                return;
+            }
+            else {
+                label4.Show();
+            }
+
+            bool success = decimal.TryParse(amount, out amount_from);
+            
+            if (!success) {
+                MessageBox.Show("Sunt permise doar cifrele!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                amount_from = 0;
+                textBox1.Text = "";
+                label4.Hide();
+            }
+
+            decimal value = c.convert(amount_from, from, to);
+
+            if(value == c.ERR_NOFROM || value == c.ERR_NOTO){
+                MessageBox.Show("Această monedă nu există!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            string text = string.Format("{0} {1} = {2} {3}", amount_from, from, Math.Round(value, 3), to);
+
+            label4.Text = text;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e) {
+            string from = getKeyByValue(db_currencies, (string) comboBox1.SelectedItem);
+            string to = getKeyByValue(db_currencies, (string) comboBox2.SelectedItem);
+            updateUI(textBox1.Text, from, to);
+        }
+
+        public string delInvalidChars(string original, char[] valid) {
+            StringBuilder outStr = new StringBuilder();
+
+            foreach (char c in original) {
+                if (valid.Contains(c)) {
+                    outStr.Append(c);
+                }
+            }
+
+            return outStr.ToString();
+        }
+
+        private Dictionary<string, string> getDBCurrencies() {
+            Dictionary<string, string> d = new Dictionary<string, string>();
+            SqlCeDataReader r;
+
+            r = db.getData("SELECT * FROM currency");
+
+            while (r.Read()) {
+                d.Add(r.GetString(0), r.GetString(1));
+            }
+
+            return d;
+        }
+
+        private string getKeyByValue(Dictionary<string, string> d, string value) {
+            foreach (var entry in d) {
+                if(entry.Value == value){
+                    return entry.Key;
+                }
+            }
+
+            return ERR_KEY_NOTFOUND.ToString();
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e) {
+            string from = getKeyByValue(db_currencies, (string) comboBox1.SelectedItem);
+            string to = getKeyByValue(db_currencies, (string) comboBox2.SelectedItem);
+            updateUI(textBox1.Text, from, to);
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e) {
+            string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
+            string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
+            updateUI(textBox1.Text, from, to);
         }
     }
 }
