@@ -286,26 +286,41 @@ namespace ms
         }
     }
 
-    abstract class Converter{
-        protected Dictionary<string, decimal> _conversionRates;
+    class Converter {
+        private Dictionary<string, decimal> _conversionRates;
 
-        protected Converter(Dictionary<string, decimal> conversionRates) {
+        public readonly decimal ERR_NOFROM = -1;
+        public readonly decimal ERR_NOTO = -2;
+
+        public Dictionary<string, decimal> conversionRates{
+            get {
+                return _conversionRates;
+            }
+
+            set {
+                _conversionRates = value;
+            }
+        }
+        public Converter() {
+        }
+
+        public Converter(Dictionary<string, decimal> conversionRates) {
             _conversionRates = conversionRates;
         }
 
-        public abstract decimal convert(decimal amount, string from, string to);
-    }
+        public decimal convert(decimal amount, string from, string to) {
+            from = from.ToUpper();
+            to = to.ToUpper();
 
-    class CurrencyConverter : Converter {
-        public CurrencyConverter(Dictionary<string, decimal> conversionRates) : base(conversionRates) {
-            this._conversionRates = conversionRates;
-        }
+            if(!conversionRates.ContainsKey(from)){
+                return ERR_NOFROM;
+            }
 
-        public override decimal convert(decimal amount, string from, string to) {
-            //TODO implement this
-            //TODO error codes for non-existing currencies
-            Debug.WriteLine("currency converter convert");
-            return 42.0M;
+            if(!conversionRates.ContainsKey(to)){
+                return ERR_NOTO;
+            }
+
+            return (decimal) amount * conversionRates[from] / conversionRates[to];
         }
 
         public void dbg() {
