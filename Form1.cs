@@ -18,7 +18,7 @@ namespace ms
     {
         private DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
         private Converter c = new Converter();
-        private Dictionary<string, string> db_currencies, currencies = new Dictionary<string, string>() {
+        private Dictionary<string, string> aux, db_currencies, currencies = new Dictionary<string, string>() {
             {"EUR", "Euro"},
             {"AUD", "Dolar australian"},
             {"BGN", "Levă bulgărească"},
@@ -50,6 +50,7 @@ namespace ms
             {"XAU", "Gram de aur"},
             {"XDR", "DST"},
         };
+
         private readonly int ERR_KEY_NOTFOUND = -1;
         private readonly string RON = "RON", RON_NAME = "Leu românesc";
         
@@ -74,8 +75,8 @@ namespace ms
             c.conversionRates = cRates;
 
             db_currencies = getDBCurrencies();
-
-
+            aux = getDBCurrencies();
+            
             int euro_pos = new int();
             int i = 0;
 
@@ -286,6 +287,46 @@ namespace ms
             return ERR_KEY_NOTFOUND.ToString();
         }
 
+        private bool isValidDate(DateTime dt) {
+            SqlCeDataReader r;
+
+            r = db.getData(string.Format("SELECT TOP(1) * FROM eur WHERE date <= '{0}' ORDER BY date DESC", dt));
+
+            if (r.Read()) {
+                return true;
+            }
+
+            return false;
+        }
+
+        private Dictionary<string, decimal> getDBRates(DateTime dt) {
+            Dictionary<string, decimal> d = new Dictionary<string, decimal>();
+            SqlCeDataReader r;
+
+            r = db.getData(string.Format("SELECT * FROM eur WHERE date = '{0}'", dt));
+
+            if (r.Read()) {
+                foreach (var c in aux) {
+                    r = db.getData(string.Format("SELECT rate FROM {0} WHERE date = '{1}'", c.Key, dt));
+                    r.Read();
+                    d.Add(c.Key, r.GetDecimal(0));
+                }
+
+                d.Add(RON, 1);
+            }
+            else {
+                foreach (var c in aux) {
+                    r = db.getData(string.Format("SELECT TOP(1) rate FROM {0} WHERE date < '{1}' ORDER BY date DESC", c.Key, dt));
+                    r.Read();
+                    d.Add(c.Key, r.GetDecimal(0));
+                }
+
+                d.Add(RON, 1);
+            }
+
+            return d;
+        }
+
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e) {
             string from = getKeyByValue(db_currencies, (string) comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string) comboBox2.SelectedItem);
@@ -293,6 +334,20 @@ namespace ms
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e) {
+            string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
+            string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
+            updateUI(textBox1.Text, from, to);
+        }
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e) {
+            if (isValidDate(dateTimePicker1.Value.Date)) {
+                c.conversionRates = getDBRates(dateTimePicker1.Value.Date);
+            }
+            else {
+                MessageBox.Show("Nu există rate de schimb pentru această dată!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                dateTimePicker1.Value = DateTime.Today;
+            }
+
             string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
             updateUI(textBox1.Text, from, to);
