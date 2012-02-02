@@ -241,7 +241,7 @@ namespace ms
                 MessageBox.Show("Această monedă nu există!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            string text = string.Format("{0} {1} = {2} {3}", amount_from, from, Math.Round(value, 3), to);
+            string text = string.Format("{0} {1} = {2} {3}", amount_from, from, Decimal.Round(value, 3, MidpointRounding.AwayFromZero), to);
 
             label4.Text = text;
         }
