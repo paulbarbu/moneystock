@@ -288,12 +288,14 @@ namespace ms
         }
 
         private bool isValidDate(DateTime dt) {
-            SqlCeDataReader r;
+            if (dt <= DateTime.Today) {
+                SqlCeDataReader r;
 
-            r = db.getData(string.Format("SELECT TOP(1) * FROM eur WHERE date <= '{0}' ORDER BY date DESC", dt));
+                r = db.getData(string.Format("SELECT TOP(1) * FROM eur WHERE date <= '{0}' ORDER BY date DESC", dt));
 
-            if (r.Read()) {
-                return true;
+                if (r.Read()) {
+                    return true;
+                }
             }
 
             return false;
