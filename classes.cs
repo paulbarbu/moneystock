@@ -109,8 +109,9 @@ namespace ms
             cmd.ExecuteNonQuery();
         }
 
-        public bool insert(string table_name, Dictionary<string, object> cols_vals, bool silent = false){
-            string q = string.Format("INSERT INTO {0}({1}) VALUES('{2}')", table_name, string.Join(",", cols_vals.Keys), string.Join("','", cols_vals.Values));
+        public bool insert(string table_name, Dictionary<string, string> cols_vals, bool silent = false){
+            string q = string.Format("INSERT INTO {0}({1}) VALUES('{2}')", table_name, string.Join(",", cols_vals.Keys.ToArray()), 
+                string.Join("','", cols_vals.Values.ToArray()));
             int rows = 0;
 
             SqlCeCommand cmd = new SqlCeCommand(q, _cn);

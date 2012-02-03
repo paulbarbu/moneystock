@@ -125,7 +125,7 @@ namespace ms
                     db.createTable(table + "(rate MONEY NOT NULL, date DATETIME UNIQUE NOT NULL)");
 
                     if (currencies.ContainsKey(table)) {
-                        db.insert("currency", new Dictionary<string, object>() {{"symbol", table}, {"name", currencies[table]}});
+                        db.insert("currency", new Dictionary<string, string>() {{"symbol", table}, {"name", currencies[table]}});
                     }
                 }
             }
@@ -146,9 +146,9 @@ namespace ms
 
             if (no_fetch) {
                 foreach (string table in cRates.Keys) {
-                    Dictionary<string, object> d = new Dictionary<string, object>();
-                    d.Add("rate", cRates[table]);
-                    d.Add("date", cDate);
+                    Dictionary<string, string> d = new Dictionary<string, string>();
+                    d.Add("rate", cRates[table].ToString());
+                    d.Add("date", cDate.ToString());
 
                     if (!db.insert(table, d, true)) {
                         //TODO raise error
@@ -159,8 +159,8 @@ namespace ms
                     db.delete(string.Format("data WHERE last_fetch='{0}'", last_fetch));
                 }
 
-                Dictionary<string, object> data = new Dictionary<string, object>();
-                data.Add("last_fetch", cDate);
+                Dictionary<string, string> data = new Dictionary<string, string>();
+                data.Add("last_fetch", cDate.ToString());
                 db.insert("data", data, true);
 
                 last_fetch = cDate;
@@ -172,14 +172,14 @@ namespace ms
                 XmlParser last10XML = new XmlParser("http://www.bnro.ro/nbrfxrates10days.xml", "Cube", "date", "Rate", "currency");
                 Dictionary<string, Dictionary<string, decimal>> last10Rates = last10XML.parse();
 
-                Dictionary<string, object> d = new Dictionary<string, object>();
+                Dictionary<string, string> d = new Dictionary<string, string>();
 
                 foreach (var date in last10Rates) {
                     d["date"] = date.Key;
 
                     if (DateTime.Parse(date.Key) != last_fetch) {
                         foreach (var currency in date.Value) {
-                            d["rate"] = currency.Value;
+                            d["rate"] = currency.Value.ToString();
                             db.insert(currency.Key, d, true);
                         }
                     }
@@ -192,14 +192,14 @@ namespace ms
 
                 XmlParser yearXML = new XmlParser("http://www.bnro.ro/files/xml/years/nbrfxrates" + lastyear + ".xml", "Cube", "date", "Rate", "currency");
                 Dictionary<string, Dictionary<string, decimal>> yRates = yearXML.parse();
-                Dictionary<string, object> d = new Dictionary<string, object>();
+                Dictionary<string, string> d = new Dictionary<string, string>();
 
                 foreach (var date in yRates) {
                     d["date"] = date.Key;
 
                     if (DateTime.Parse(date.Key) != last_fetch) {
                         foreach (var currency in date.Value) {
-                            d["rate"] = currency.Value;
+                            d["rate"] = currency.Value.ToString();
                             db.insert(currency.Key, d, true);
                         }
                     }
