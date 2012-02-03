@@ -323,24 +323,6 @@ namespace ms
 
             return (decimal) amount * conversionRates[from] / conversionRates[to];
         }
-
-        public void dbg() {
-            foreach(var x in _conversionRates){
-                Debug.WriteLine("{0} => {1}", x.Key, x.Value);
-            }
-        }
-
-        public static void dbg(Dictionary<string, Dictionary<string, decimal>> d){
-            foreach(var pair in d){
-                    Debug.WriteLine("{0} => (", pair.Key);
-                    foreach(var data in pair.Value ){
-                        Debug.WriteLine("\t({0} => {1})\n", data.Key, data.Value);
-                    }
-                    Debug.WriteLine("),");
-                }
-
-                Debug.WriteLine(d);
-        }
     }
 
     abstract class Item {
