@@ -11,6 +11,7 @@ using System.IO;
 using System.Diagnostics; //todo remove
 using System.Xml;
 using System.Data.SqlServerCe;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace ms
 {
@@ -69,9 +70,6 @@ namespace ms
 
             Dictionary<string, decimal> cRates =  initData();
 
-            loading.Close();
-            this.Visible = true;
-
             c.conversionRates = cRates;
 
             db_currencies = getDBCurrencies();
@@ -86,6 +84,7 @@ namespace ms
             foreach(var currency in db_currencies){
                 comboBox1.Items.Add(currency.Value);
                 comboBox2.Items.Add(currency.Value);
+                checkedListBox1.Items.Add(currency.Value);
 
                 if ("EUR" == currency.Key) {
                     euro_pos = i+1;
@@ -101,6 +100,56 @@ namespace ms
             comboBox2.SelectedIndex = 0;
 
             textBox1.Text = "1";
+            populate_chart();
+
+            dateTimePicker1.MaxDate = DateTime.Today;
+            dateTimePicker2.MaxDate = DateTime.Today;
+            dateTimePicker3.MaxDate = DateTime.Today;
+
+            tabControl1.SelectedIndex = 0;
+            this.Size = new System.Drawing.Size(760, 140);
+            tabControl1.Size = new System.Drawing.Size(750, 130);
+
+            loading.Close();
+            this.Visible = true;
+        }
+
+        private void populate_chart() {
+            Series series1 = new Series();
+            Series series2 = new Series();
+
+            series1.ChartType = SeriesChartType.Line;
+            series1.Name = "EUR";
+
+            series2.ChartType = SeriesChartType.Line;
+            series2.Name = "USD";
+            
+            SqlCeDataReader r;
+            r = db.getData(string.Format("SELECT * FROM eur WHERE date >= '{0}'", DateTime.Now.AddDays(-10)));
+            
+            List<decimal> yval = new List<decimal>();
+            List<DateTime> xval = new List<DateTime>();
+
+            while(r.Read()){
+                yval.Add(r.GetDecimal(0));
+                xval.Add(r.GetDateTime(1));
+            }
+
+            chart1.Series.Add(series1);
+            chart1.Series["EUR"].Points.DataBindXY(xval, yval);
+
+            r = db.getData(string.Format("SELECT * FROM usd WHERE date >= '{0}'", DateTime.Now.AddDays(-10)));
+
+            yval = new List<decimal>();
+            xval = new List<DateTime>();
+
+            while (r.Read()) {
+                yval.Add(r.GetDecimal(0));
+                xval.Add(r.GetDateTime(1));
+            }
+            
+            chart1.Series.Add(series2);
+            chart1.Series["USD"].Points.DataBindXY(xval, yval);
         }
 
         private Dictionary<string, decimal> initData() {
@@ -353,6 +402,28 @@ namespace ms
             string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
             updateUI(textBox1.Text, from, to);
+        }
+
+        private void tabPage2_Click(object sender, EventArgs e) {
+        }
+        
+        private void chart1_Click(object sender, EventArgs e) {
+
+        }
+
+        private void label5_Click(object sender, EventArgs e) {
+
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
+            if (0 == tabControl1.SelectedIndex) {
+                this.Size = new System.Drawing.Size(760, 140);
+                tabControl1.Size = new System.Drawing.Size(750, 130);
+            }
+            else {
+                this.Size = new System.Drawing.Size(785, 388); //TODO change this width and maybe height too
+                tabControl1.Size = new System.Drawing.Size(775, 378);
+            }
         }
     }
 }
