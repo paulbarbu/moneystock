@@ -19,6 +19,7 @@ namespace ms
     {
         private DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
         private Converter c = new Converter();
+        private Dictionary<string, Series> s_currencies = new Dictionary<string, Series>();
         private Dictionary<string, string> aux, db_currencies, currencies = new Dictionary<string, string>() {
             {"EUR", "Euro"},
             {"AUD", "Dolar australian"},
@@ -76,6 +77,7 @@ namespace ms
             aux = getDBCurrencies();
             
             int euro_pos = new int();
+            int usd_pos = new int();
             int i = 0;
 
             comboBox1.Items.Add(RON_NAME);
@@ -86,72 +88,67 @@ namespace ms
                 comboBox2.Items.Add(currency.Value);
                 checkedListBox1.Items.Add(currency.Value);
 
+                s_currencies.Add(currency.Key, new Series());
+                s_currencies[currency.Key].Name = currency.Key;
+                s_currencies[currency.Key].ChartType = SeriesChartType.Line;
+
                 if ("EUR" == currency.Key) {
                     euro_pos = i+1;
                 }
-                else {
-                    i++;
-                }                
+
+                if ("USD" == currency.Key) {
+                    usd_pos = i;
+                }
+                
+                i++;   
             }
 
             db_currencies.Add(RON, RON_NAME);
 
             comboBox1.SelectedIndex = euro_pos;
             comboBox2.SelectedIndex = 0;
+            checkedListBox1.CheckOnClick = true;
+            checkedListBox1.SetItemChecked(euro_pos - 1, true);
+            checkedListBox1.SetItemChecked(usd_pos, true);
 
             textBox1.Text = "1";
-            populate_chart();
 
             dateTimePicker1.MaxDate = DateTime.Today;
             dateTimePicker2.MaxDate = DateTime.Today;
             dateTimePicker3.MaxDate = DateTime.Today;
 
+            dateTimePicker2.Value = DateTime.Today.AddDays(-14);
+
+            populate_chart(chart1, s_currencies["USD"], DateTime.Now, DateTime.Now.AddDays(-14));
+            
             tabControl1.SelectedIndex = 0;
             this.Size = new System.Drawing.Size(760, 140);
             tabControl1.Size = new System.Drawing.Size(750, 130);
+
+            chart1.ChartAreas[0].AxisY.Title = RON;
+            chart1.ChartAreas[0].AxisX.Title = "Data";
 
             loading.Close();
             this.Visible = true;
         }
 
-        private void populate_chart() {
-            Series series1 = new Series();
-            Series series2 = new Series();
-
-            series1.ChartType = SeriesChartType.Line;
-            series1.Name = "EUR";
-
-            series2.ChartType = SeriesChartType.Line;
-            series2.Name = "USD";
-            
+        private void populate_chart(Chart c, Series s, DateTime start, DateTime end) {
             SqlCeDataReader r;
-            r = db.getData(string.Format("SELECT * FROM eur WHERE date >= '{0}'", DateTime.Now.AddDays(-10)));
-            
+            r = db.getData(string.Format("SELECT * FROM {0} WHERE date <= '{1}' AND date >= '{2}'", s.Name, start, end));
+
             List<decimal> yval = new List<decimal>();
             List<DateTime> xval = new List<DateTime>();
-
-            while(r.Read()){
-                yval.Add(r.GetDecimal(0));
-                xval.Add(r.GetDateTime(1));
-            }
-
-            chart1.Series.Add(series1);
-            chart1.Series["EUR"].Points.DataBindXY(xval, yval);
-
-            r = db.getData(string.Format("SELECT * FROM usd WHERE date >= '{0}'", DateTime.Now.AddDays(-10)));
-
-            yval = new List<decimal>();
-            xval = new List<DateTime>();
 
             while (r.Read()) {
                 yval.Add(r.GetDecimal(0));
                 xval.Add(r.GetDateTime(1));
             }
-            
-            chart1.Series.Add(series2);
-            chart1.Series["USD"].Points.DataBindXY(xval, yval);
-        }
 
+            c.Series.Remove(s);
+            c.Series.Add(s);
+            c.Series[s.Name].Points.DataBindXY(xval, yval);
+        }
+        
         private Dictionary<string, decimal> initData() {
             bool populate = false, no_fetch = false;
             DateTime? last_fetch = null;
@@ -421,8 +418,38 @@ namespace ms
                 tabControl1.Size = new System.Drawing.Size(750, 130);
             }
             else {
+                updateChart();
+            }
+        }
+
+        private void dateTimePicker2_ValueChanged(object sender, EventArgs e) {
+            updateChart();
+        }
+
+        private void dateTimePicker3_ValueChanged(object sender, EventArgs e) {
+            updateChart();
+        }
+
+        private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e) {
+            updateChart();
+        }
+
+        private void updateChart() {
+            foreach (var s in s_currencies) {
+                chart1.Series.Remove(s.Value);
+            }
+
+            if (0 == checkedListBox1.CheckedItems.Count) {
+                this.Size = new System.Drawing.Size(226, 388); //TODO change this width and maybe height too
+                tabControl1.Size = new System.Drawing.Size(216, 378);
+            }
+            else {
                 this.Size = new System.Drawing.Size(785, 388); //TODO change this width and maybe height too
                 tabControl1.Size = new System.Drawing.Size(775, 378);
+            }
+
+            foreach (object currency in checkedListBox1.CheckedItems) {
+                populate_chart(chart1, s_currencies[getKeyByValue(db_currencies, currency.ToString())], dateTimePicker3.Value, dateTimePicker2.Value);
             }
         }
     }
