@@ -407,17 +407,6 @@ namespace ms
             updateUI(textBox1.Text, from, to);
         }
 
-        private void tabPage2_Click(object sender, EventArgs e) {
-        }
-        
-        private void chart1_Click(object sender, EventArgs e) {
-
-        }
-
-        private void label5_Click(object sender, EventArgs e) {
-
-        }
-
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
             if (0 == tabControl1.SelectedIndex) {
                 this.Size = new System.Drawing.Size(760, 140);

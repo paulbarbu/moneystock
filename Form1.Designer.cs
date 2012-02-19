@@ -216,7 +216,6 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Statistici";
             this.tabPage2.UseVisualStyleBackColor = true;
-            this.tabPage2.Click += new System.EventHandler(this.tabPage2_Click);
             // 
             // checkedListBox1
             // 
@@ -235,7 +234,6 @@
             this.label6.Size = new System.Drawing.Size(42, 13);
             this.label6.TabIndex = 4;
             this.label6.Text = "până la";
-            this.label6.Click += new System.EventHandler(this.label5_Click);
             // 
             // label5
             // 
@@ -245,7 +243,6 @@
             this.label5.Size = new System.Drawing.Size(112, 13);
             this.label5.TabIndex = 4;
             this.label5.Text = "Reprezintă valori de la";
-            this.label5.Click += new System.EventHandler(this.label5_Click);
             // 
             // dateTimePicker2
             // 
