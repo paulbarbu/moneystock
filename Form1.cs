@@ -124,9 +124,15 @@ namespace ms
             tabControl1.SelectedIndex = 0;
             this.Size = new System.Drawing.Size(760, 140);
             tabControl1.Size = new System.Drawing.Size(750, 130);
+            statusStrip1.Visible = false;
 
             chart1.ChartAreas[0].AxisY.Title = RON;
             chart1.ChartAreas[0].AxisX.Title = "Data";
+
+            //chart1.ChartAreas[0].CursorX.IsUserEnabled = true;
+            //chart1.ChartAreas[0].CursorY.IsUserEnabled = true;
+            chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+            chart1.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
 
             loading.Close();
             this.Visible = true;
@@ -416,6 +422,7 @@ namespace ms
             if (0 == tabControl1.SelectedIndex) {
                 this.Size = new System.Drawing.Size(760, 140);
                 tabControl1.Size = new System.Drawing.Size(750, 130);
+                statusStrip1.Visible = false;
             }
             else {
                 updateChart();
@@ -442,15 +449,32 @@ namespace ms
             if (0 == checkedListBox1.CheckedItems.Count) {
                 this.Size = new System.Drawing.Size(226, 388); //TODO change this width and maybe height too
                 tabControl1.Size = new System.Drawing.Size(216, 378);
+                statusStrip1.Visible = false;
             }
             else {
-                this.Size = new System.Drawing.Size(785, 388); //TODO change this width and maybe height too
-                tabControl1.Size = new System.Drawing.Size(775, 378);
+                this.Size = new System.Drawing.Size(785, 400);//388); //TODO change this width and maybe height too
+                tabControl1.Size = new System.Drawing.Size(775, 390);//378);
+                statusStrip1.Visible = true;
             }
 
             foreach (object currency in checkedListBox1.CheckedItems) {
                 populate_chart(chart1, s_currencies[getKeyByValue(db_currencies, currency.ToString())], dateTimePicker3.Value, dateTimePicker2.Value);
             }
+        }
+
+        private void chart1_MouseClick(object sender, MouseEventArgs e) {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right) {
+                chart1.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+                chart1.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+            }
+        }
+
+        private void chart1_MouseEnter(object sender, EventArgs e) {
+            toolStripStatusLabel1.Text = "Selectați o zonă a graficului pentru a mări imaginea, pentru revenire folosiți click dreapta.";
+        }
+
+        private void chart1_MouseLeave(object sender, EventArgs e) {
+            toolStripStatusLabel1.Text = "";
         }
     }
 }
