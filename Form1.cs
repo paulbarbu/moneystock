@@ -111,7 +111,8 @@ namespace ms
             checkedListBox1.SetItemChecked(euro_pos - 1, true);
             checkedListBox1.SetItemChecked(usd_pos, true);
 
-            textBox1.Text = "1";
+            textBox2.Text = "24";
+            textBox1.Text = "1";            
 
             dateTimePicker1.MaxDate = DateTime.Today;
             dateTimePicker2.MaxDate = DateTime.Today;
@@ -263,12 +264,14 @@ namespace ms
             return cRates;
         }
 
-        private void updateUI(string amount, string from, string to) {
-            decimal amount_from;
+        private void updateUI(string amount, string from, string to, string tva) {
+            decimal amount_from, tva_from;
             
             amount = delInvalidChars(amount, "0123456789,.".ToCharArray());
+            tva = delInvalidChars(tva, "0123456789,.".ToCharArray());
 
             textBox1.Text = amount;
+            textBox2.Text = tva;
 
             if ("" == amount) {
                 label4.Hide();
@@ -278,13 +281,22 @@ namespace ms
                 label4.Show();
             }
 
+            if ("" == tva) {
+                label9.Hide();
+            }
+            else {
+                label9.Show();
+            }
+
             bool success = decimal.TryParse(amount, out amount_from);
+            bool tva_success = decimal.TryParse(tva, out tva_from);
             
-            if (!success) {
+            if (!success || !tva_success) {
                 MessageBox.Show("Sunt permise doar cifrele!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 amount_from = 0;
                 textBox1.Text = "";
                 label4.Hide();
+                label9.Hide();
             }
 
             decimal value = c.convert(amount_from, from, to);
@@ -294,14 +306,21 @@ namespace ms
             }
 
             string text = string.Format("{0} {1} = {2} {3}", amount_from, from, Decimal.Round(value, 3, MidpointRounding.AwayFromZero), to);
+            string tva_text = string.Format("{0} {1} cu {2}% TVA reprezintă {3}", Decimal.Round(value, 3, MidpointRounding.AwayFromZero), 
+                to, tva_from, getValueWithTVA(value, tva_from));
 
             label4.Text = text;
+            label9.Text = tva_text;
+        }
+
+        private decimal getValueWithTVA(decimal value, decimal TVA) {
+            return ((TVA / 100) * value) + value;
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e) {
             string from = getKeyByValue(db_currencies, (string) comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string) comboBox2.SelectedItem);
-            updateUI(textBox1.Text, from, to);
+            updateUI(textBox1.Text, from, to, textBox2.Text);
         }
 
         public string delInvalidChars(string original, char[] valid) {
@@ -384,13 +403,13 @@ namespace ms
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e) {
             string from = getKeyByValue(db_currencies, (string) comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string) comboBox2.SelectedItem);
-            updateUI(textBox1.Text, from, to);
+            updateUI(textBox1.Text, from, to, textBox2.Text);
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e) {
             string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
-            updateUI(textBox1.Text, from, to);
+            updateUI(textBox1.Text, from, to, textBox2.Text);
         }
 
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e) {
@@ -404,7 +423,7 @@ namespace ms
 
             string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
-            updateUI(textBox1.Text, from, to);
+            updateUI(textBox1.Text, from, to, textBox2.Text);
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
@@ -441,8 +460,8 @@ namespace ms
                 statusStrip1.Visible = false;
             }
             else {
-                this.Size = new System.Drawing.Size(785, 400);//388); //TODO change this width and maybe height too
-                tabControl1.Size = new System.Drawing.Size(775, 390);//378);
+                this.Size = new System.Drawing.Size(785, 400); //TODO change this width and maybe height too
+                tabControl1.Size = new System.Drawing.Size(775, 390);
                 statusStrip1.Visible = true;
             }
 
@@ -464,6 +483,21 @@ namespace ms
 
         private void chart1_MouseLeave(object sender, EventArgs e) {
             toolStripStatusLabel1.Text = "";
+        }
+
+        private bool isValidTVA(decimal tva) {
+
+            if(0 < tva && tva <= 100){
+                return true;
+            }
+
+            return false;
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e) {
+            string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
+            string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
+            updateUI(textBox1.Text, from, to, textBox2.Text);
         }
     }
 }
