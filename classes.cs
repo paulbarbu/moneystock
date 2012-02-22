@@ -275,14 +275,6 @@ namespace ms
                 }
             }
 
-            /*foreach(var pair in currencies){
-                Debug.WriteLine("{0} => (", pair.Key);
-                foreach(var data in pair.Value ){
-                    Debug.WriteLine("\t({0} => {1})\n", data.Key, data.Value);
-                }
-                Debug.WriteLine("),");
-            }
-            Debug.WriteLine(currencies);*/
             return currencies;
         }
     }

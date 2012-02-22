@@ -12,6 +12,8 @@ using System.Diagnostics; //todo remove
 using System.Xml;
 using System.Data.SqlServerCe;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Globalization;
+using System.Threading;
 
 namespace ms
 {
@@ -68,6 +70,8 @@ namespace ms
             Form2 loading = new Form2();
             loading.Show();
             loading.Update();
+
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
             Dictionary<string, decimal> cRates =  initData();
 
