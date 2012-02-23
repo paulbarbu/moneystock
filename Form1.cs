@@ -226,46 +226,51 @@ namespace ms
             TimeSpan ts = (TimeSpan)(cDate - last_fetch);
 
             if (populate || ts.Days >= 10) {
-                XmlParser last10XML = new XmlParser("http://www.bnro.ro/nbrfxrates10days.xml", "Cube", "date", "Rate", "currency");
-                Dictionary<string, Dictionary<string, decimal>> last10Rates = last10XML.parse();
-
-                Dictionary<string, string> d = new Dictionary<string, string>();
-
-                foreach (var date in last10Rates) {
-                    d["date"] = date.Key;
-
-                    if (DateTime.Parse(date.Key) != last_fetch) {
-                        foreach (var currency in date.Value) {
-                            d["rate"] = currency.Value.ToString();
-                            db.insert(currency.Key, d, true);
-                        }
-                    }
-                }
+                get10DaysData();
             }
 
-
             if (populate) {
-                int lastyear = DateTime.Now.AddYears(-1).Year;
-
-                XmlParser yearXML = new XmlParser("http://www.bnro.ro/files/xml/years/nbrfxrates" + lastyear + ".xml", "Cube", "date", "Rate", "currency");
-                Dictionary<string, Dictionary<string, decimal>> yRates = yearXML.parse();
-                Dictionary<string, string> d = new Dictionary<string, string>();
-
-                foreach (var date in yRates) {
-                    d["date"] = date.Key;
-
-                    if (DateTime.Parse(date.Key) != last_fetch) {
-                        foreach (var currency in date.Value) {
-                            d["rate"] = currency.Value.ToString();
-                            db.insert(currency.Key, d, true);
-                        }
-                    }
-                }
+                getYearData();
             }
 
             cRates.Add(RON, 1);
 
             return cRates;
+        }
+
+        private void get10DaysData(){
+            XmlParser last10XML = new XmlParser("http://www.bnro.ro/nbrfxrates10days.xml", "Cube", "date", "Rate", "currency");
+            Dictionary<string, Dictionary<string, decimal>> last10Rates = last10XML.parse();
+
+            Dictionary<string, string> d = new Dictionary<string, string>();
+
+            foreach (var date in last10Rates) {
+                d["date"] = date.Key;
+
+                foreach (var currency in date.Value) {
+                    d["rate"] = currency.Value.ToString();
+                    db.insert(currency.Key, d, true);
+                }
+            }
+        }
+
+        private void getYearData(int year = -1) {
+            if (-1 == year) {
+                year = DateTime.Now.AddYears(-1).Year;
+            }
+
+            XmlParser yearXML = new XmlParser("http://www.bnro.ro/files/xml/years/nbrfxrates" + year + ".xml", "Cube", "date", "Rate", "currency");
+            Dictionary<string, Dictionary<string, decimal>> yRates = yearXML.parse();
+            Dictionary<string, string> d = new Dictionary<string, string>();
+
+            foreach (var date in yRates) {
+                d["date"] = date.Key;
+
+                foreach (var currency in date.Value) {
+                    d["rate"] = currency.Value.ToString();
+                    db.insert(currency.Key, d, true);
+                }
+            }
         }
 
         private void updateUI(string amount, string from, string to, string tva) {
