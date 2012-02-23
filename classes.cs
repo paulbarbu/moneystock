@@ -284,6 +284,7 @@ namespace ms
 
         public readonly decimal ERR_NOFROM = -1;
         public readonly decimal ERR_NOTO = -2;
+        public readonly decimal ERR_OF = -3;
 
         public Dictionary<string, decimal> conversionRates{
             get {
@@ -313,7 +314,12 @@ namespace ms
                 return ERR_NOTO;
             }
 
-            return (decimal) amount * conversionRates[from] / conversionRates[to];
+            try {
+                return (decimal)amount * conversionRates[from] / conversionRates[to];
+            }
+            catch (OverflowException e) {
+                return ERR_OF;
+            }
         }
     }
 

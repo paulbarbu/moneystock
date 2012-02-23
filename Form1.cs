@@ -311,13 +311,23 @@ namespace ms
 
             decimal value = c.convert(amount_from, from, to);
 
-            if(value == c.ERR_NOFROM || value == c.ERR_NOTO){
+            if (value == c.ERR_NOFROM || value == c.ERR_NOTO) {
                 MessageBox.Show("Această monedă nu există!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            else if(value == c.ERR_OF){
+                MessageBox.Show("Suma introdusă depășește valorile valide!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                amount_from = 0;
+                textBox1.Text = "";
+                label4.Hide();
+                label9.Hide();
+            }
 
-            string text = string.Format("{0} {1} = {2} {3}", amount_from, from, Decimal.Round(value, 3, MidpointRounding.AwayFromZero), to);
-            string tva_text = string.Format("{0} {1} cu {2}% TVA reprezintă {3}", Decimal.Round(value, 3, MidpointRounding.AwayFromZero), 
-                to, tva_from, getValueWithTVA(value, tva_from));
+            string text = string.Format("{0} {1} = {2} {3}", addReadabilityChars(amount_from.ToString()), from, 
+                addReadabilityChars(Decimal.Round(value, 3, MidpointRounding.AwayFromZero).ToString()), to);
+
+            string tva_text = string.Format("{0} {1} cu {2}% TVA reprezintă {3}", 
+                addReadabilityChars(Decimal.Round(value, 3, MidpointRounding.AwayFromZero).ToString()), 
+                to, tva_from, addReadabilityChars(Decimal.Round(getValueWithTVA(value, tva_from), 3, MidpointRounding.AwayFromZero).ToString()));
 
             label4.Text = text;
             label9.Text = tva_text;
@@ -343,6 +353,34 @@ namespace ms
             }
 
             return outStr.ToString();
+        }
+
+        public string addReadabilityChars(string text, int interval = 3, char c = ' ') {//helper function
+            StringBuilder retval = new StringBuilder();
+            int ct = 0;
+
+            int d_point = text.LastIndexOf('.');
+
+            //Debug.WriteLine(d_point);
+
+            if (-1 == d_point) {
+                d_point = text.Length;
+            }
+
+            for (int i = text.Length-1; i >= d_point; i--) {
+                retval.Insert(0, text[i]);    
+            }
+
+            for (int i = d_point - 1; i >= 0; i--) {
+                if(ct % interval == 0 && 0 != ct){
+                    retval.Insert(0, c);
+                }
+
+                retval.Insert(0, text[i]);
+                ct++;
+            }
+
+            return retval.ToString();
         }
 
         private Dictionary<string, string> getDBCurrencies() {
@@ -508,6 +546,18 @@ namespace ms
             string from = getKeyByValue(db_currencies, (string)comboBox1.SelectedItem);
             string to = getKeyByValue(db_currencies, (string)comboBox2.SelectedItem);
             updateUI(textBox1.Text, from, to, textBox2.Text);
+        }
+
+        private void updateDB_Click(object sender, EventArgs e) {
+            this.Hide();
+            Form2 loading = new Form2();
+            loading.Show();
+            loading.Update();
+                       
+            get10DaysData();
+
+            loading.Hide();
+            this.Show();
         }
     }
 }
