@@ -127,8 +127,8 @@ namespace ms
             populate_chart(chart1, s_currencies["USD"], DateTime.Now, DateTime.Now.AddDays(-14));
             
             tabControl1.SelectedIndex = 0;
-            this.Size = new System.Drawing.Size(760, 140);
-            tabControl1.Size = new System.Drawing.Size(750, 130);
+            this.Size = new System.Drawing.Size(760, 185);
+            tabControl1.Size = new System.Drawing.Size(750, 175);
             statusStrip1.Visible = false;
 
             chart1.ChartAreas[0].AxisY.Title = RON;
@@ -278,6 +278,7 @@ namespace ms
             textBox2.Text = tva;
 
             if ("" == amount) {
+                label9.Hide();
                 label4.Hide();
                 return;
             }
@@ -432,8 +433,8 @@ namespace ms
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
             if (0 == tabControl1.SelectedIndex) {
-                this.Size = new System.Drawing.Size(760, 140);
-                tabControl1.Size = new System.Drawing.Size(750, 130);
+                this.Size = new System.Drawing.Size(760, 185);
+                tabControl1.Size = new System.Drawing.Size(750, 175);
                 statusStrip1.Visible = false;
             }
             else {
