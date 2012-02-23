@@ -39,12 +39,15 @@
             this.label4 = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.setăriToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ăBazaDeAdteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.obțineCursulDinAnulToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.updateDB = new System.Windows.Forms.ToolStripMenuItem();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.textBox2 = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -54,10 +57,6 @@
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.label7 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -114,7 +113,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(268, 40);
+            this.label4.Location = new System.Drawing.Point(54, 74);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(35, 13);
             this.label4.TabIndex = 7;
@@ -133,23 +132,17 @@
             // setăriToolStripMenuItem
             // 
             this.setăriToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ăBazaDeAdteToolStripMenuItem,
-            this.obțineCursulDinAnulToolStripMenuItem});
+            this.updateDB});
             this.setăriToolStripMenuItem.Name = "setăriToolStripMenuItem";
             this.setăriToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.setăriToolStripMenuItem.Text = "Setări";
             // 
-            // ăBazaDeAdteToolStripMenuItem
+            // updateDB
             // 
-            this.ăBazaDeAdteToolStripMenuItem.Name = "ăBazaDeAdteToolStripMenuItem";
-            this.ăBazaDeAdteToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.ăBazaDeAdteToolStripMenuItem.Text = "Actualizează baza de date";
-            // 
-            // obțineCursulDinAnulToolStripMenuItem
-            // 
-            this.obțineCursulDinAnulToolStripMenuItem.Name = "obțineCursulDinAnulToolStripMenuItem";
-            this.obțineCursulDinAnulToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.obțineCursulDinAnulToolStripMenuItem.Text = "Obține cursul din anul...";
+            this.updateDB.Name = "updateDB";
+            this.updateDB.Size = new System.Drawing.Size(200, 22);
+            this.updateDB.Text = "Actualizează baza de date";
+            this.updateDB.Click += new System.EventHandler(this.updateDB_Click);
             // 
             // comboBox1
             // 
@@ -209,6 +202,41 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Convertor valutar";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(54, 92);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(35, 13);
+            this.label9.TabIndex = 8;
+            this.label9.Text = "label9";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(112, 40);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(15, 13);
+            this.label8.TabIndex = 6;
+            this.label8.Text = "%";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(20, 40);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(31, 13);
+            this.label7.TabIndex = 6;
+            this.label7.Text = "TVA:";
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(57, 37);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(49, 20);
+            this.textBox2.TabIndex = 0;
+            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
             // 
             // tabPage2
             // 
@@ -302,41 +330,6 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(20, 40);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(31, 13);
-            this.label7.TabIndex = 6;
-            this.label7.Text = "TVA:";
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(57, 37);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(49, 20);
-            this.textBox2.TabIndex = 0;
-            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(112, 40);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(15, 13);
-            this.label8.TabIndex = 6;
-            this.label8.Text = "%";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(438, 40);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(35, 13);
-            this.label9.TabIndex = 8;
-            this.label9.Text = "label9";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -377,8 +370,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem setăriToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ăBazaDeAdteToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem obțineCursulDinAnulToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem updateDB;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.TabControl tabControl1;
