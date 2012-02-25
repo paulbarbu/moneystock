@@ -39,7 +39,7 @@ namespace ms
         public DBHandler(string file_name, string pass) {
             fileName = file_name;
             password = pass;
-            _conStr = string.Format("DataSource=\"{0}\"; Password='{1}'", fileName, _password);
+            _conStr = string.Format("DataSource=\"{0}\"; Password='{1}';", fileName, _password);
 
             if (DBexists()) {
                 connect();
