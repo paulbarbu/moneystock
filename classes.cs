@@ -6,7 +6,6 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Xml;
-using System.Diagnostics; //todo remove
 using System.Data.SqlServerCe;
 
 namespace ms
@@ -170,39 +169,6 @@ namespace ms
         }
     }
     
-    class XMLDownloader : abstractDownloader {
-        private string _URI;
-        private WebClient _client;
-
-        public string URI {
-            get {
-                return _URI;
-            }
-
-            set {
-                _URI = value;
-            }
-        }
-
-        public XMLDownloader(string URI) : base(URI){
-            this.URI = URI;
-
-            this._client = new WebClient();
-        }
-
-        public override string getData() {
-            //TODO try-catch
-            Stream ssource = this._client.OpenRead(this.URI);
-            StreamReader reader = new StreamReader(ssource);
-            string source = reader.ReadToEnd();
-
-            ssource.Close();
-            reader.Close();
-            
-            return source;
-        }
-    }
-
     class XmlParser : XmlTextReader {
         private string _element_name;
         private string _element_attr;
@@ -258,7 +224,6 @@ namespace ms
                             }
                         }
                         else if (this.Name == _subelement_name && null != current_key) {
-                            //TODO check if the key exists
                             while (this.MoveToNextAttribute()) {
                                 if (this.Name == _subelement_attr) {
                                     current_currency = this.Value;
@@ -321,71 +286,5 @@ namespace ms
                 return ERR_OF;
             }
         }
-    }
-
-    abstract class Item {
-        private string _name;
-        private string _symbol;
-        private int _value;
-        private XMLDownloader _dld; 
-
-        public string Name {
-            get {
-                return _name;
-            }
-
-            set {
-                _name = value;
-            }
-        }
-
-        public string Symbol {
-            get {
-                return _symbol;
-            }
-
-            set {
-                _symbol = value;
-            }
-        }
-
-        public int Value {
-            get {
-                return _value;
-            }
-
-            set {
-                _value = value;
-            }
-        }
-
-        public XMLDownloader Dld {
-            set {
-                _dld = value;
-            }
-        }
-
-        public Item(string name, string symbol, int value, XMLDownloader dld) {
-            this.Name = name;
-            this.Symbol = symbol;
-            this.Value = value;
-            this.Dld = dld;
-        }
-
-        public abstract int getValue(); // use this.Dld
-
-        public abstract bool saveData();
-
-        public abstract int plot();
-    }
-
-    abstract class abstractDownloader {
-        private string _URI;
-
-        protected abstractDownloader(string URI) {
-            _URI = URI;
-        }
-
-        public abstract string getData();
     }
 }

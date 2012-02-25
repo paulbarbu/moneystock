@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Net;
 using System.IO;
-using System.Diagnostics; //todo remove
 using System.Xml;
 using System.Data.SqlServerCe;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -19,7 +18,7 @@ namespace ms
 {
     public partial class Form1 : Form
     {
-        private DBHandler db = new DBHandler("db", "moneystock"); //TODO create the DB in user/data directorys
+        private DBHandler db = new DBHandler("moneystockdb", "moneystock");
         private Converter c = new Converter();
         private Dictionary<string, Series> s_currencies = new Dictionary<string, Series>();
         private Dictionary<string, string> aux, db_currencies, currencies = new Dictionary<string, string>() {
@@ -141,8 +140,6 @@ namespace ms
             chart1.ChartAreas[0].AxisY.Title = RON;
             chart1.ChartAreas[0].AxisX.Title = "Data";
 
-            //chart1.ChartAreas[0].CursorX.IsUserEnabled = true;
-            //chart1.ChartAreas[0].CursorY.IsUserEnabled = true;
             chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
             chart1.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
 
@@ -214,9 +211,7 @@ namespace ms
                     d.Add("rate", cRates[table].ToString());
                     d.Add("date", cDate.ToString());
 
-                    if (!db.insert(table, d, true)) {
-                        //TODO raise error
-                    }
+                    db.insert(table, d, true);
                 }
 
                 if (null != last_fetch) {
@@ -367,8 +362,6 @@ namespace ms
             int ct = 0;
 
             int d_point = text.LastIndexOf('.');
-
-            //Debug.WriteLine(d_point);
 
             if (-1 == d_point) {
                 d_point = text.Length;
@@ -523,12 +516,12 @@ namespace ms
             }
 
             if (0 == checkedListBox1.CheckedItems.Count) {
-                this.Size = new System.Drawing.Size(226, 388); //TODO change this width and maybe height too
+                this.Size = new System.Drawing.Size(226, 388);
                 tabControl1.Size = new System.Drawing.Size(216, 378);
                 statusStrip1.Visible = false;
             }
             else {
-                this.Size = new System.Drawing.Size(785, 400); //TODO change this width and maybe height too
+                this.Size = new System.Drawing.Size(785, 400);
                 tabControl1.Size = new System.Drawing.Size(775, 390);
                 statusStrip1.Visible = true;
             }
