@@ -72,8 +72,15 @@ namespace ms
             loading.Update();
 
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            Dictionary<string, decimal> cRates = null;
 
-            Dictionary<string, decimal> cRates =  initData();
+            try {
+                cRates = initData();
+            }
+            catch (WebException ex) {
+                MessageBox.Show("O conexiune activă la internet este necesară pentru a obține cursul valutar!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(-1);
+            }
 
             c.conversionRates = cRates;
 
@@ -553,8 +560,13 @@ namespace ms
             Form2 loading = new Form2();
             loading.Show();
             loading.Update();
-                       
-            get10DaysData();
+
+            try {
+                get10DaysData();
+            }
+            catch (WebException ex) {
+                MessageBox.Show("O conexiune activă la internet este necesară pentru a obține cursul valutar!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             loading.Hide();
             this.Show();
