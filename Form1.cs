@@ -493,10 +493,23 @@ namespace ms
         }
 
         private void dateTimePicker2_ValueChanged(object sender, EventArgs e) {
+            if(dateTimePicker2.Value >= dateTimePicker3.Value){
+                dateTimePicker2.Value = DateTime.Now.AddDays(-14);
+            }
+
             updateChart();
         }
 
         private void dateTimePicker3_ValueChanged(object sender, EventArgs e) {
+            if (dateTimePicker2.Value >= dateTimePicker3.Value) {
+                if (DateTime.Now > dateTimePicker3.MaxDate) {
+                    dateTimePicker3.Value = dateTimePicker3.MaxDate;
+                }
+                else {
+                    dateTimePicker3.Value = DateTime.Now;
+                }
+            }
+
             updateChart();
         }
 
