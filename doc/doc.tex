@@ -1,0 +1,117 @@
+\documentclass[13pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[romanian]{babel}
+\usepackage{fontspec}
+\usepackage[colorlinks]{hyperref}
+
+\addto\captionsromanian{\renewcommand{\abstractname}{Abstract}}
+
+\begin{document}
+
+\title{Money Stock}
+\author{Barbu Paul - Gheorghe\\
+Colegiul Național "Gheorghe Lazăr" - Sibiu\\
+\texttt{paul.barbu@cnglsibiu.ro}}
+\date{}
+\maketitle
+
+\begin{abstract}
+Documentația programului Money Stock pentru Concursul de Informatică Aplicată
+2012.
+Acest program a fost creat plecând de la tema „Plus și Minus” având în vedere
+fluctuațiile cursului valutar.
+Aplicația este scrisă în C\# și folosește sursa on-line
+\href{http://bnr.ro}{www.bnr.ro} pentru a
+obține cursul valutar pentru monedele disponibile.
+\end{abstract}
+
+\section{Scopul aplicației}
+Scopul acestei aplicații este de a oferi utilizatorului o interfață simplă și
+intuitivă pentru a putea schimba sume imaginare de bani în diferite monede.
+Pe lângă funcționalitatea de bază, aplicația oferă posibilitatea de afișare a
+cursurilor sub forma de grafic, o metodă intuitivă pentru studierea evoluției
+investițiilor.
+
+\section{Seturile de date}
+MoneyStock folosește cursurile valutare puse la dispoziție de BNR prin
+intermediul fișierelor XML.
+La fiecare pornire aplicația descarcă și parsează aceste feed-uri populând o bază
+de date embedded.
+
+Doar la prima pornire aplicația va descărca feed-ul din anul precedent \\ (calculat în
+program), de exemplu
+\href{http://bnr.ro/files/xml/years/nbrfxrates2011.xml}{feed-ul din anul 2011}, 
+și va introduce aceste date în baza de date.
+
+Apoi se vor prelua seturile de \href{http://bnr.ro/nbrfxrates10days.xml}{10
+zile} și \href{http://bnr.ro/nbrfxrates.xml}{setul curent de date} lucru care se
+va întâmpla la orice pornire ulterioară cu setul curent de date.
+Setul de zece zile va fi preluat doar dacă datele locale sunt mai
+vechi de zece zile.
+
+\section{Baza de date}
+Baza de date folosită este \texttt{Microsoft SQL Server Compact 3.5} fiind una de
+tip embedded nu necesită existența unui server, putând fi creată local pe orice
+calculator.
+Schema este integrată în program, tabelele fiind create dinamic din cod în
+funcție de datele primite de la BNR.
+
+Fiecare monedă are un tabel propriu după cum urmează:
+
+\begin{center}
+\begin{tabular}{| c | c |}
+    \multicolumn{2}{ c }{nume monedă} \\ \hline
+    rata de schimb & data cursului \\
+    \hline
+\end{tabular}
+\end{center}
+
+Cele două câmpuri reprezentând rata de schimb a monedei și data
+calendaristică când aceasta e valabilă.
+
+\section{Cursul valutar}
+Principala funcționalitate oferită de Money Stock este cea de conversie a unor
+sume de bani între monezi, aceasta oferind și posibilitatea adăugării TVA-ului la
+suma curentă.
+De asemenea este posibilă alegerea unei date calendaristice, caz în care ratele
+de schimb se vor modifica reflectându-le pe cele de la data
+selectată.
+
+%TODO add images and explain them with a numbered list
+
+\section{Statistică} %TODO check if it's named statistici
+Când utilizatorul selectează tab-ul „Statistici” are posibilitatea de a vedea o
+reprezentare a datelor sub forma de grafic.
+Acest mod îi permite cu ușurință să facă comparații și să observe cum a evoluat
+cursul valutar pe o perioadă de timp.
+
+Perioada predefinită este de două săptămâni, iar monedele pre-selectate sunt
+euro și dolar-ul american, acestea putând fi modificate cu ușurință.
+
+%TODO explain the zoom
+Când pe grafic sunt reprezentate mai multe monede pe o perioadă lungă de timp,
+acesta își pierde din acuratețe, acest lucru fiind contracarat de funcția
+\texttt{zoom}.
+Zoom-ul poate fi activat selectând cu click stânga o regiune a graficului
+aceasta urmând să fie mărită și acuratețea reprezentării datelor să crească.
+
+Pentru revenire la nivelul normal de zoom se poate da un click dreapta pe
+grafic. Pentru a reveni un singur nivel de zoom trebuie folosit butonul 
+%TODO add image 
+de lângă barele de derulare.
+
+\section{Funcții suplimentare}
+%mărimea dinamica a form-ului
+%update DB
+
+\section{Validare și securitate}
+%the input box on the main tab
+%the validity of the dates on both tabs
+%checking for internet connection
+
+\section{Cerințe}
+%DLL
+%.net fw 3.5
+
+\end{document}

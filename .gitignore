@@ -3,3 +3,7 @@ bin/*
 *.sdf
 *.exe
 publish/*
+*.log
+*.out
+*.aux
+*.pdf
