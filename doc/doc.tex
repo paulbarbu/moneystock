@@ -4,6 +4,8 @@
 \usepackage[romanian]{babel}
 \usepackage{fontspec}
 \usepackage[colorlinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{wrapfig}
 
 \addto\captionsromanian{\renewcommand{\abstractname}{Abstract}}
 
@@ -23,18 +25,18 @@ Acest program a fost creat plecând de la tema „Plus și Minus” având în v
 fluctuațiile cursului valutar.
 Aplicația este scrisă în C\# și folosește sursa on-line
 \href{http://bnr.ro}{www.bnr.ro} pentru a
-obține cursul valutar pentru monedele disponibile.
+obține cursul valutar pentru monedele \\ disponibile.
 \end{abstract}
 
 \section{Scopul aplicației}
 Scopul acestei aplicații este de a oferi utilizatorului o interfață simplă și
 intuitivă pentru a putea schimba sume imaginare de bani în diferite monede.
 Pe lângă funcționalitatea de bază, aplicația oferă posibilitatea de afișare a
-cursurilor sub forma de grafic, o metodă intuitivă pentru studierea evoluției
+cursurilor sub forma unui grafic, o metodă intuitivă pentru studierea evoluției
 investițiilor.
 
 \section{Seturile de date}
-MoneyStock folosește cursurile valutare puse la dispoziție de BNR prin
+MoneyStock folosește cursurile valutare puse la dispoziție de BNR prin \\
 intermediul fișierelor XML.
 La fiecare pornire aplicația descarcă și parsează aceste feed-uri populând o bază
 de date embedded.
@@ -51,10 +53,10 @@ Setul de zece zile va fi preluat doar dacă datele locale sunt mai
 vechi de zece zile.
 
 \section{Baza de date}
-Baza de date folosită este \texttt{Microsoft SQL Server Compact 3.5} fiind una de
+Baza de date folosită este \texttt{Microsoft SQL Server Compact 3.5}, fiind una de
 tip embedded nu necesită existența unui server, putând fi creată local pe orice
 calculator.
-Schema este integrată în program, tabelele fiind create dinamic din cod în
+Structura este integrată în program, tabelele fiind create dinamic în cod în
 funcție de datele primite de la BNR.
 
 Fiecare monedă are un tabel propriu după cum urmează:
@@ -67,7 +69,7 @@ Fiecare monedă are un tabel propriu după cum urmează:
 \end{tabular}
 \end{center}
 
-Cele două câmpuri reprezentând rata de schimb a monedei și data
+Cele două câmpuri reprezentând rata de schimb a monedei și data \\ 
 calendaristică când aceasta e valabilă.
 
 \section{Cursul valutar}
@@ -78,18 +80,28 @@ De asemenea este posibilă alegerea unei date calendaristice, caz în care ratel
 de schimb se vor modifica reflectându-le pe cele de la data
 selectată.
 
-%TODO add images and explain them with a numbered list
+\begin{figure}[htb]
+\centering
+\includegraphics[width=1\textwidth]{img/ms.png}
+\end{figure}
 
-\section{Statistică} %TODO check if it's named statistici
+\begin{enumerate}
+    \item Suma de schimb
+    \item Moneda din care se schimbă
+    \item Moneda în care se face schimbul
+    \item Data la care schimbul are loc (influențează rata de schimb)
+    \item Valoarea TVA-ului (în procente)
+\end{enumerate}
+
+\section{Statistică}
 Când utilizatorul selectează tab-ul „Statistici” are posibilitatea de a vedea o
-reprezentare a datelor sub forma de grafic.
+reprezentare a datelor sub formă de grafic.
 Acest mod îi permite cu ușurință să facă comparații și să observe cum a evoluat
 cursul valutar pe o perioadă de timp.
 
 Perioada predefinită este de două săptămâni, iar monedele pre-selectate sunt
-euro și dolar-ul american, acestea putând fi modificate cu ușurință.
+euro și dolarul american, acestea putând fi modificate cu ușurință.
 
-%TODO explain the zoom
 Când pe grafic sunt reprezentate mai multe monede pe o perioadă lungă de timp,
 acesta își pierde din acuratețe, acest lucru fiind contracarat de funcția
 \texttt{zoom}.
@@ -98,20 +110,50 @@ aceasta urmând să fie mărită și acuratețea reprezentării datelor să crea
 
 Pentru revenire la nivelul normal de zoom se poate da un click dreapta pe
 grafic. Pentru a reveni un singur nivel de zoom trebuie folosit butonul 
-%TODO add image 
-de lângă barele de derulare.
+care apare lângă barele de derulare.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=1\textwidth]{img/zoom.png}
+\end{figure}
 
 \section{Funcții suplimentare}
-%mărimea dinamica a form-ului
-%update DB
+Una dintre principalele funcții suplimentare este aceea că aplicația nu trebuie
+repornită dacă ratele de schimb se modifică, actualizarea bazei de date fiind
+posibilă din meniul „Setări”.
 
-\section{Validare și securitate}
-%the input box on the main tab
-%the validity of the dates on both tabs
-%checking for internet connection
+\begin{figure}[htb]
+\centering
+\includegraphics[scale=0.65]{img/settings.png}
+\end{figure}
+
+Atunci când nicio monedă nu e selectată în vederea reprezentării grafice,
+aplicația își modifică automat forma evitând afișarea unui set de date gol.
+
+\section{Validarea datelor}
+În vederea rulării fără probleme când o sumă de bani este introdusă în
+textbox orice caracter care nu ar putea forma un număr este automat șters,
+evitând erorile legate de tipul de dată.
+
+Luând în considerare faptul că ratele de schimb nu sunt cunoscute pentru viitor
+toate obiectele \texttt{DateTimePicker} sunt restricționate până la data la care
+se cunoaște un curs valutar.
+
+Obținerea feed-urilor de date implică existența unei conexiuni active la
+internet, în caz contrar baza de date nu se poate actualiza, apărând un mesaj de
+eroare.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[scale=0.7]{img/error.png}
+\end{figure}
 
 \section{Cerințe}
-%DLL
-%.net fw 3.5
+Money Stock rulează nativ pe \texttt{.NET Framework 4.0}, nefiind necesare
+biblioteci externe.
+Dacă în schimb aplicația este rulată pe \texttt{.NET Framework 3.5} cele două
+DLL-uri (incluse în arhiva programului) \texttt{System.Windows.Forms.DataVisualization.dll} 
+și \texttt{System.Windows.Forms.DataVisualization.Design.dll} sunt necesare \\
+deoarece \texttt{.NET 3.5} nu include suport nativ pentru grafice.
 
 \end{document}
