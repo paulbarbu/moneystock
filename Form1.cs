@@ -78,7 +78,12 @@ namespace ms
             }
             catch (WebException ex) {
                 MessageBox.Show("O conexiune activă la internet este necesară pentru a obține cursul valutar!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Environment.Exit(-1);
+
+                if (!db.DBexists()) {
+                    Environment.Exit(-1);
+                }
+
+                cRates = initData_wo_internet();
             }
 
             c.conversionRates = cRates;
@@ -236,6 +241,20 @@ namespace ms
             }
 
             cRates.Add(RON, 1);
+
+            return cRates;
+        }
+
+        private Dictionary<string, decimal> initData_wo_internet() {
+            Dictionary<string, decimal> cRates = new Dictionary<string, decimal>();
+
+            foreach (var table in currencies) {
+                SqlCeDataReader r = db.getData(String.Format("SELECT TOP(1) rate FROM {0} ORDER BY date DESC", table.Key));
+
+                if (r.Read()) {
+                    cRates.Add(table.Key, r.GetDecimal(0));
+                }
+            }
 
             return cRates;
         }
