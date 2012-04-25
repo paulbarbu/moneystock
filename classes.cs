@@ -108,7 +108,7 @@ namespace ms
             cmd.ExecuteNonQuery();
         }
 
-        public bool insert(string table_name, Dictionary<string, string> cols_vals, bool silent = false){
+        public bool insert(string table_name, Dictionary<string, string> cols_vals, bool silent){
             string q = string.Format("INSERT INTO {0}({1}) VALUES('{2}')", table_name, string.Join(",", cols_vals.Keys.ToArray()), 
                 string.Join("','", cols_vals.Values.ToArray()));
             int rows = 0;

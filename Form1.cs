@@ -78,7 +78,7 @@ namespace ms
             }
             catch (WebException ex) {
                 MessageBox.Show("O conexiune activă la internet este necesară pentru a obține cursul valutar!", "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
+                
                 if (!db.DBexists()) {
                     Environment.Exit(-1);
                 }
@@ -152,6 +152,22 @@ namespace ms
             this.Visible = true;
         }
 
+        private Dictionary<string, decimal> initData_wo_internet() {
+            Dictionary<string, decimal> cRates = new Dictionary<string, decimal>();
+
+            foreach (var table in currencies) {
+                SqlCeDataReader r = db.getData(String.Format("SELECT TOP(1) rate FROM {0} ORDER BY date DESC", table.Key));
+
+                if (r.Read()) {
+                    cRates.Add(table.Key, r.GetDecimal(0));
+                }
+            }
+
+            cRates.Add(RON, 1);
+
+            return cRates;
+        }
+
         private void populate_chart(Chart c, Series s, DateTime start, DateTime end) {
             SqlCeDataReader r;
             r = db.getData(string.Format("SELECT * FROM {0} WHERE date <= '{1}' AND date >= '{2}'", s.Name, start, end));
@@ -191,7 +207,7 @@ namespace ms
                     db.createTable(table + "(rate MONEY NOT NULL, date DATETIME UNIQUE NOT NULL)");
 
                     if (currencies.ContainsKey(table)) {
-                        db.insert("currency", new Dictionary<string, string>() {{"symbol", table}, {"name", currencies[table]}});
+                        db.insert("currency", new Dictionary<string, string>() {{"symbol", table}, {"name", currencies[table]}}, false);
                     }
                 }
             }
@@ -237,26 +253,10 @@ namespace ms
             }
 
             if (populate) {
-                getYearData();
+                getYearData(-1);
             }
 
             cRates.Add(RON, 1);
-
-            return cRates;
-        }
-
-        private Dictionary<string, decimal> initData_wo_internet() {
-            Dictionary<string, decimal> cRates = new Dictionary<string, decimal>();
-
-            foreach (var table in currencies) {
-                SqlCeDataReader r = db.getData(String.Format("SELECT TOP(1) rate FROM {0} ORDER BY date DESC", table.Key));
-
-                if (r.Read()) {
-                    cRates.Add(table.Key, r.GetDecimal(0));
-                }
-            }
-
-			cRates.Add(RON, 1);
 
             return cRates;
         }
@@ -277,7 +277,7 @@ namespace ms
             }
         }
 
-        private void getYearData(int year = -1) {
+        private void getYearData(int year) {
             if (-1 == year) {
                 year = DateTime.Now.AddYears(-1).Year;
             }
@@ -345,12 +345,12 @@ namespace ms
                 label9.Hide();
             }
 
-            string text = string.Format("{0} {1} = {2} {3}", addReadabilityChars(amount_from.ToString()), from, 
-                addReadabilityChars(Decimal.Round(value, 3, MidpointRounding.AwayFromZero).ToString()), to);
+            string text = string.Format("{0} {1} = {2} {3}", addReadabilityChars(amount_from.ToString(), 3, ' '), from, 
+                addReadabilityChars(Decimal.Round(value, 3, MidpointRounding.AwayFromZero).ToString(), 3, ' '), to);
 
             string tva_text = string.Format("{0} {1} cu {2}% TVA reprezintă {3}", 
-                addReadabilityChars(Decimal.Round(value, 3, MidpointRounding.AwayFromZero).ToString()), 
-                to, tva_from, addReadabilityChars(Decimal.Round(getValueWithTVA(value, tva_from), 3, MidpointRounding.AwayFromZero).ToString()));
+                addReadabilityChars(Decimal.Round(value, 3, MidpointRounding.AwayFromZero).ToString(), 3, ' '), 
+                to, tva_from, addReadabilityChars(Decimal.Round(getValueWithTVA(value, tva_from), 3, MidpointRounding.AwayFromZero).ToString(), 3, ' '));
 
             label4.Text = text;
             label9.Text = tva_text;
@@ -378,7 +378,7 @@ namespace ms
             return outStr.ToString();
         }
 
-        public string addReadabilityChars(string text, int interval = 3, char c = ' ') {//helper function
+        public string addReadabilityChars(string text, int interval, char c) {//helper function
             StringBuilder retval = new StringBuilder();
             int ct = 0;
 
