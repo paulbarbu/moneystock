@@ -256,6 +256,8 @@ namespace ms
                 }
             }
 
+			cRates.Add(RON, 1);
+
             return cRates;
         }
 
